@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef, createContext } from 'react';
-// Adaptación de almacenamiento web
+import React, { useState, useEffect, useMemo, useCallback, useRef, createContext, useContext } from 'react';
 if (!window.storage) {
   window.storage = {
     get: async (key) => {
