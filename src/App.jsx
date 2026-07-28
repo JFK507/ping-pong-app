@@ -333,6 +333,16 @@ function TorneoTab({ db, commit, active }) {
   const update = (patch, now = false) =>
     commit({ ...db, tournaments: db.tournaments.map((t) => (t.id === active.id ? { ...t, ...patch } : t)) }, now);
 
+  const cancelarTorneo = () => {
+  if (!confirm("¿Cancelar este torneo? Se perderá todo el progreso.")) return;
+
+  commit({
+    ...db,
+    tournaments: db.tournaments.filter(t => t.id !== active.id),
+    activeId: null,
+  }, true);
+};
+
   if (ver) {
     const t = db.tournaments.find((x) => x.id === ver.id);
     if (t) return (
@@ -386,6 +396,9 @@ function TorneoTab({ db, commit, active }) {
       <div style={{ padding: '10px 16px 0', display: 'flex', gap: 6 }}>
         <Btn small disabled={!active.qf} onClick={() => setVer({ id: active.id, modo: 'cuadro' })}>Cuadro</Btn>
         <Btn small onClick={() => setVer({ id: active.id, modo: 'registro' })}>Registro</Btn>
+        <Btn small tone="red" onClick={cancelarTorneo}>
+    Cancelar torneo
+</Btn>
       </div>
       <Stepper stage={active.stage} />
       {active.stage === 'inscripcion' && <Inscripcion db={db} commit={commit} t={active} update={update} />}
@@ -572,6 +585,8 @@ const ColOrden = ({ titulo, ids, name }) => (
     </div>
   </div>
 );
+
+
 
 /* ── Clasificación ── */
 
