@@ -213,6 +213,7 @@ const Segmento = ({ ops, val, onChange }) => (
 /* ───────────────────────── App ───────────────────────── */
 
 export default function App() {
+  
   const [db, setDb] = useState(null);
   const [fotos, setFotos] = useState({});
   const [tab, setTab] = useState('torneo');
@@ -249,6 +250,7 @@ export default function App() {
     try { await window.storage.set(K_FOTOS, JSON.stringify(next)); } catch { }
   }, [fotos]);
 
+  
   useEffect(() => {
     const h = () => flush();
     document.addEventListener('visibilitychange', h);
