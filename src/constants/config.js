@@ -15,6 +15,7 @@ export const PTS = {
 // Reglas del torneo
 export const TARGET_QF = 7;
 export const TARGET_SF = 10;
+export const TIEBREAK_SET = 2; // índice del 3er set de la final (0-based): a 7, sin ventaja
 
 // Etapas del torneo
 export const STAGES = [

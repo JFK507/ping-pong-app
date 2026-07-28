@@ -1,4 +1,4 @@
-const NOMBRES = [
+export const NOMBRES = [
   'Tomatito', 'Diamante', 'Relámpago', 'Cangrejo', 'Tiburón', 'Volcán', 'Huracán', 'Mango',
   'Guacamayo', 'Pelícano', 'Meteorito', 'Cometa', 'Zafiro', 'Rubí', 'Obsidiana', 'Trueno',
   'Jaguar', 'Colibrí', 'Iguana', 'Pulpo', 'Piraña', 'Ñeque', 'Tucán', 'Marañón',
