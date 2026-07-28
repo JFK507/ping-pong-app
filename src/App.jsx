@@ -1,93 +1,42 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef, createContext, useContext } from 'react';
-if (!window.storage) {
-  window.storage = {
-    get: async (key) => {
-      try {
-        const val = localStorage.getItem(key);
-        return val ? { value: val } : null;
-      } catch (e) {
-        return null;
-      }
-    },
-    set: async (key, val) => {
-      try {
-        localStorage.setItem(key, val);
-      } catch (e) {
-        console.error("Error al guardar en storage", e);
-      }
-    }
-  };
-}
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useRef,
+  createContext,
+  useContext,
+} from "react";
 
-const K_STATE = 'gs_state_v2';
-const K_FOTOS = 'gs_fotos_v1';
 import { C } from "./constants/colors";
-const PTS = { clasificar: 3, ganarCuartos: 5, ganarSemis: 7, ganarFinal: 10 };
-const TARGET_QF = 7;
-const TARGET_SF = 10;
 
-const NOMBRES = [
-  'Tomatito', 'Diamante', 'Relámpago', 'Cangrejo', 'Tiburón', 'Volcán', 'Huracán', 'Mango',
-  'Guacamayo', 'Pelícano', 'Meteorito', 'Cometa', 'Zafiro', 'Rubí', 'Obsidiana', 'Trueno',
-  'Jaguar', 'Colibrí', 'Iguana', 'Pulpo', 'Piraña', 'Ñeque', 'Tucán', 'Marañón',
-  'Cacao', 'Papaya', 'Coco', 'Guandú', 'Patacón', 'Chicheme', 'Raspao', 'Carimañola',
-  'Hojaldre', 'Tamborito', 'Diablico', 'Pollera', 'Mola', 'Chiva', 'Taboga', 'Azuero',
-  'Cerro Punta', 'Bocas', 'Guararé', 'Corotú', 'Macano', 'Guayacán', 'Chichica', 'Sancocho',
-];
+import {
+  K_FOTOS,
+  PTS,
+  TARGET_QF,
+  TARGET_SF,
+  STAGES,
+} from "./constants/config";
 
-const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-3);
-const hoy = () => new Date().toISOString().slice(0, 10);
-const shuffle = (arr) => {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
-  return a;
-};
+import {
+  shuffle,
+  vibra,
+} from "./utils/helpers";
 
-const setTarget = (i) => (i === 2 ? 7 : 10);
-const setAdv = (i) => i !== 2;
-const isWin = (x, y, target, adv) => (adv ? x >= target && x - y >= 2 : x >= target);
+import {
+  setTarget,
+  setAdv,
+  isWin,
+} from "./utils/torneo";
 
-const vibra = (p) => { try { navigator.vibrate?.(p); } catch { } };
+import {
+  uid,
+  hoy,
+  nombreLibre,
+  nombreTemporada,
+} from "./utils/database";
 
-const STAGES = [
-  ['inscripcion', 'Inscripción'], ['orden', 'Orden'], ['clasificacion', 'Clasificación'],
-  ['cuadro', 'Cuadro'], ['cuartos', 'Cuartos'], ['semis', 'Semis'], ['final', 'Final'], ['resumen', 'Resumen'],
-];
-
-const nombreLibre = (usados) => {
-  const libres = NOMBRES.filter((n) => !usados.includes(n));
-  const pool = libres.length ? libres : NOMBRES;
-  return pool[Math.floor(Math.random() * pool.length)];
-};
-
-const nombreTemporada = (db) => {
-  const y = new Date().getFullYear();
-  const usados = [...(db.seasons || []).map((s) => s.nombre), db.season?.nombre].filter(Boolean);
-  let n = `Temporada ${y}`;
-  const romanos = ['II', 'III', 'IV', 'V', 'VI'];
-  let i = 0;
-  while (usados.includes(n) && i < romanos.length) { n = `Temporada ${y} · ${romanos[i]}`; i += 1; }
-  return n;
-};
-
-const emptyDB = () => ({
-  version: 3, players: [], tournaments: [], activeId: null,
-  season: { id: uid(), nombre: `Temporada ${new Date().getFullYear()}`, inicio: hoy() },
-  seasons: [],
-});
-
-function migrar(d) {
-  if (!d || !d.players) return emptyDB();
-  if (!d.season) {
-    const s = { id: uid(), nombre: `Temporada ${new Date().getFullYear()}`, inicio: hoy() };
-    d.season = s;
-    d.seasons = d.seasons || [];
-    d.tournaments = (d.tournaments || []).map((t) => ({ ...t, seasonId: t.seasonId || s.id }));
-  }
-  d.seasons = d.seasons || [];
-  d.tournaments = (d.tournaments || []).map((t) => ({ ...t, seasonId: t.seasonId || d.season.id }));
-  return d;
-}
+import { load, save } from "./utils/storage";
 
 /* ─────────── contexto de fotos ─────────── */
 const FotoCtx = createContext({ fotos: {}, setFoto: () => { } });
